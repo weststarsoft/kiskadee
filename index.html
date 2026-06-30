@@ -722,7 +722,7 @@
   .modal-overlay.open .item-modal { transform: translateY(0); }
 
   .modal-img-wrap {
-    height: 220px;
+    height: 320px;
     background: var(--bg-card2);
     overflow: hidden;
     position: relative;
@@ -744,6 +744,93 @@
     background: linear-gradient(135deg, #1e1e1e, #2a1506);
   }
 
+  /* ── PHOTO CAROUSEL ── */
+  .carousel-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    touch-action: pan-y;
+  }
+
+  .carousel-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    color: var(--white);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    transition: background 0.2s;
+  }
+
+  .carousel-arrow:hover { background: rgba(0,0,0,0.75); }
+  .carousel-arrow.prev { left: 12px; }
+  .carousel-arrow.next { right: 12px; }
+
+  .carousel-counter {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(0,0,0,0.6);
+    color: var(--white);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    z-index: 5;
+    letter-spacing: 0.02em;
+  }
+
+  .carousel-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 5;
+  }
+
+  .carousel-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    padding: 0;
+  }
+
+  .carousel-dot.active {
+    background: var(--white);
+    width: 18px;
+    border-radius: 3px;
+  }
+
   .modal-close-btn {
     position: absolute;
     top: 14px;
@@ -759,6 +846,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 6;
   }
 
   .modal-body {
@@ -987,7 +1075,6 @@
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="item-modal" id="itemModal">
     <div class="modal-img-wrap" id="modalImgWrap">
-      <div class="modal-img-placeholder">⭐</div>
       <button class="modal-close-btn" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -1016,6 +1103,15 @@ const categoryEmoji = {
   'Sobremesas': '🍫', 'Sucos Tradicionais': '🥤', 'Sucos 2 Sabores': '🍊',
   'Sucos Especiais': '🧃', 'Bebidas': '🥤'
 };
+
+// ── COMO ADICIONAR FOTOS A UM PRATO ──
+// Adicione um campo "photos" (array de caminhos) em qualquer item.
+// Funciona com 1, 2, 3, 4, 5+ fotos — o carrossel se adapta automaticamente.
+// Sem o campo "photos" (ou array vazio), aparece a estrela ⭐ de placeholder.
+//
+// Exemplo:
+// { name: "Hot Kiskadee", desc: "...", price: 44.00,
+//   photos: ["fotos/hot-kiskadee-1.jpg", "fotos/hot-kiskadee-2.jpg", "fotos/hot-kiskadee-3.jpg"] }
 
 const menuData = [
   { category: "Entradas", items: [
@@ -1253,7 +1349,7 @@ function buildPromos() {
         <div class="promo-name">${p.name}</div>
         <div class="promo-price">${fmtPrice(p.price)}</div>
       </div>`;
-    card.onclick = () => openModal(p.name, p.desc, p.price);
+    card.onclick = () => openModal(p.name, p.desc, p.price, p.photos);
     wrap.appendChild(card);
   });
 }
@@ -1303,7 +1399,7 @@ function buildMenu() {
             <button class="add-btn" onclick="event.stopPropagation(); addToCart('${item.name.replace(/'/g,"\\'")}', ${item.price})">+</button>
           </div>
         </div>`;
-      card.onclick = () => openModal(item.name, item.desc, item.price);
+      card.onclick = () => openModal(item.name, item.desc, item.price, item.photos);
       grid.appendChild(card);
     });
 
@@ -1345,8 +1441,13 @@ window.addEventListener('scroll', () => {
   setActiveTab(current);
 });
 
-// ── MODAL ──
-function openModal(name, desc, price) {
+// ── MODAL / CAROUSEL ──
+let carouselState = { photos: [], index: 0 };
+let touchStartX = 0;
+let touchDeltaX = 0;
+let isDragging = false;
+
+function openModal(name, desc, price, photos) {
   currentModal = { name, desc, price };
   document.getElementById('modalName').textContent = name;
   document.getElementById('modalDesc').textContent = desc || 'Peça agora e surpreenda-se!';
@@ -1355,8 +1456,106 @@ function openModal(name, desc, price) {
     addToCart(name, price);
     closeModal();
   };
+
+  renderCarousel(photos || []);
+
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+function renderCarousel(photos) {
+  carouselState = { photos, index: 0 };
+  const wrap = document.getElementById('modalImgWrap');
+
+  // Always keep the close button
+  let html = `<button class="modal-close-btn" onclick="closeModal()">✕</button>`;
+
+  if (!photos || photos.length === 0) {
+    // No photos yet — show star placeholder, no carousel controls
+    html += `<div class="modal-img-placeholder">⭐</div>`;
+    wrap.innerHTML = html;
+    return;
+  }
+
+  if (photos.length === 1) {
+    // Single photo — show it plainly, no arrows/dots/counter
+    html += `<img src="${photos[0]}" alt="" draggable="false">`;
+    wrap.innerHTML = html;
+    return;
+  }
+
+  // Multiple photos — full carousel experience
+  html += `
+    <span class="carousel-counter" id="carouselCounter">1 / ${photos.length}</span>
+    <div class="carousel-track" id="carouselTrack">
+      ${photos.map(src => `<div class="carousel-slide"><img src="${src}" alt="" draggable="false"></div>`).join('')}
+    </div>
+    <button class="carousel-arrow prev" onclick="carouselPrev(event)">‹</button>
+    <button class="carousel-arrow next" onclick="carouselNext(event)">›</button>
+    <div class="carousel-dots" id="carouselDots">
+      ${photos.map((_, i) => `<button class="carousel-dot${i === 0 ? ' active' : ''}" onclick="carouselGoTo(event, ${i})"></button>`).join('')}
+    </div>`;
+
+  wrap.innerHTML = html;
+
+  const track = document.getElementById('carouselTrack');
+  track.addEventListener('touchstart', onCarouselTouchStart, { passive: true });
+  track.addEventListener('touchmove', onCarouselTouchMove, { passive: true });
+  track.addEventListener('touchend', onCarouselTouchEnd);
+}
+
+function updateCarouselUI() {
+  const { photos, index } = carouselState;
+  const track = document.getElementById('carouselTrack');
+  if (track) track.style.transform = `translateX(-${index * 100}%)`;
+
+  const counter = document.getElementById('carouselCounter');
+  if (counter) counter.textContent = `${index + 1} / ${photos.length}`;
+
+  const dots = document.querySelectorAll('.carousel-dot');
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+}
+
+function carouselNext(e) {
+  if (e) e.stopPropagation();
+  const { photos, index } = carouselState;
+  carouselState.index = (index + 1) % photos.length;
+  updateCarouselUI();
+}
+
+function carouselPrev(e) {
+  if (e) e.stopPropagation();
+  const { photos, index } = carouselState;
+  carouselState.index = (index - 1 + photos.length) % photos.length;
+  updateCarouselUI();
+}
+
+function carouselGoTo(e, i) {
+  if (e) e.stopPropagation();
+  carouselState.index = i;
+  updateCarouselUI();
+}
+
+function onCarouselTouchStart(e) {
+  touchStartX = e.touches[0].clientX;
+  isDragging = true;
+}
+
+function onCarouselTouchMove(e) {
+  if (!isDragging) return;
+  touchDeltaX = e.touches[0].clientX - touchStartX;
+}
+
+function onCarouselTouchEnd() {
+  if (!isDragging) return;
+  isDragging = false;
+  const threshold = 40;
+  if (touchDeltaX > threshold) {
+    carouselPrev();
+  } else if (touchDeltaX < -threshold) {
+    carouselNext();
+  }
+  touchDeltaX = 0;
 }
 
 function closeModal(e) {
