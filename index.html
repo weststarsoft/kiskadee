@@ -192,6 +192,8 @@
   /* ── PROMOÇÕES DESTAQUE ── */
   .promo-section {
     padding: 24px 0 8px;
+    max-width: 1400px;
+    margin: 0 auto;
   }
 
   .section-label {
@@ -312,6 +314,8 @@
     -ms-overflow-style: none;
     gap: 4px;
     padding: 10px 16px;
+    max-width: 1400px;
+    margin: 0 auto;
   }
 
   .tabs::-webkit-scrollbar { display: none; }
@@ -343,7 +347,7 @@
   /* ── MENU CONTENT ── */
   .menu-content {
     padding: 24px 16px 140px;
-    max-width: 700px;
+    max-width: 1400px;
     margin: 0 auto;
   }
 
@@ -387,11 +391,15 @@
   /* ── ITEM CARDS ── */
   .items-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
   }
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
+    .items-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+
+  @media (max-width: 360px) {
     .items-grid { grid-template-columns: 1fr; }
   }
 
@@ -1216,6 +1224,9 @@ const promos = [
   { name: "Combinado Paradise (100 pç)", desc: "A experiência completa do Kiskadee.", price: 320.00 },
   { name: "Sushi Cheff Especial (8 un.)", desc: "Salmão maçaricado com camarão e crispe de batata doce.", price: 72.00 },
   { name: "Ceviche (400g)", desc: "Salmão, camarão, kani e polvo marinados.", price: 65.00 },
+  { name: "Hot Kiskadee", desc: "Roll crocante aberto com salmão, cebolinha, teryaki, gergelim e geleia.", price: 44.00 },
+  { name: "Combinado Misto de Sushi (44 pç)", desc: "Niguiri, Uramaki e mais em um combinado completo.", price: 105.00 },
+  { name: "Carpaccio de Salmão", desc: "Salmão, azeite de oliva, laranja e limão.", price: 62.00 },
 ];
 
 // ── STATE ──
