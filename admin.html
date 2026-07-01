@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiskadee — Painel Admin</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:        #0c0c0c;
+  --surface:   #161616;
+  --surface2:  #1f1f1f;
+  --surface3:  #282828;
+  --border:    rgba(255,255,255,0.07);
+  --red:       #D4402A;
+  --red-dim:   rgba(212,64,42,0.15);
+  --amber:     #C8973A;
+  --amber-dim: rgba(200,151,58,0.12);
+  --green:     #2ecc71;
+  --green-dim: rgba(46,204,113,0.12);
+  --white:     #ffffff;
+  --hi:        #cccccc;
+  --mid:       #777777;
+  --lo:        #444444;
+  --r-sm:      6px;
+  --r-md:      10px;
+  --r-lg:      16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ── LOGIN ── */
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212,64,42,0.12) 0%, transparent 60%), var(--bg);
+}
+
+.login-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.login-sub {
+  font-size: 0.72rem;
+  color: var(--amber);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 36px;
+}
+
+.login-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--hi);
+  margin-bottom: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field input, .field select, .field textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  width: 100%;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--red);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.field select option { background: var(--surface2); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 10px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover { background: #e04e38; }
+.btn-secondary { background: var(--surface3); color: var(--hi); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--lo); }
+.btn-danger { background: rgba(220,53,69,0.15); color: #ff6b6b; border: 1px solid rgba(220,53,69,0.2); }
+.btn-danger:hover { background: rgba(220,53,69,0.25); }
+.btn-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
+.btn-success:hover { background: rgba(46,204,113,0.2); }
+.btn-full { width: 100%; }
+.btn-sm { padding: 6px 12px; font-size: 0.78rem; }
+.btn-icon { padding: 7px; width: 32px; height: 32px; border-radius: var(--r-sm); }
+
+#loginErr {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+  display: none;
+}
+
+/* ── LAYOUT ── */
+#adminApp { display: none; min-height: 100vh; }
+
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 220px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  color: var(--white);
+}
+
+.sidebar-brand-sub {
+  font-size: 0.65rem;
+  color: var(--amber);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.sidebar-badge {
+  font-size: 0.6rem;
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(212,64,42,0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-top: 6px;
+  display: inline-block;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.sidebar-nav {
+  padding: 16px 12px;
+  flex: 1;
+}
+
+.nav-section {
+  font-size: 0.62rem;
+  color: var(--lo);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0 8px;
+  margin: 16px 0 6px;
+}
+
+.nav-section:first-child { margin-top: 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--r-sm);
+  color: var(--mid);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item:hover { background: var(--surface2); color: var(--hi); }
+.nav-item.active { background: var(--red-dim); color: var(--red); }
+
+.nav-item svg { flex-shrink: 0; opacity: 0.7; }
+.nav-item.active svg { opacity: 1; }
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.main {
+  margin-left: 220px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+.content {
+  padding: 28px;
+  flex: 1;
+}
+
+/* ── SECTIONS ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── CARDS ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 18px 20px;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.stat-card.amber .stat-value { color: var(--amber); }
+.stat-card.red .stat-value { color: var(--red); }
+.stat-card.green .stat-value { color: var(--green); }
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.table-header-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--hi);
+}
+
+.search-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 7px 12px;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  outline: none;
+  width: 220px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus { border-color: var(--red); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.84rem;
+  color: var(--hi);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+.td-img {
+  width: 48px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--surface3);
+}
+
+.td-img-placeholder {
+  width: 48px;
+  height: 36px;
+  background: var(--surface3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* ── TOGGLE ── */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toggle input { opacity: 0; width: 0; height: 0; }
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--lo);
+  border-radius: 20px;
+  transition: 0.2s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: var(--mid);
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.toggle input:checked + .toggle-slider { background: var(--red); }
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(16px);
+  background: white;
+}
+
+/* ── BADGE ── */
+.badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(12px);
+  transition: transform 0.25s;
+}
+
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal-head {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 2;
+}
+
+.modal-head h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.modal-body { padding: 20px 24px 24px; }
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ── PHOTO UPLOAD ── */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.photo-thumb {
+  aspect-ratio: 3/2;
+  background: var(--surface2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-thumb-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.7);
+  border: none;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.photo-thumb:hover .photo-thumb-del { opacity: 1; }
+
+.photo-add {
+  aspect-ratio: 3/2;
+  background: var(--surface2);
+  border: 2px dashed var(--lo);
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-size: 0.7rem;
+  color: var(--mid);
+}
+
+.photo-add:hover { border-color: var(--red); background: var(--red-dim); color: var(--red); }
+
+/* ── DRAG HANDLE ── */
+.drag-handle {
+  cursor: grab;
+  color: var(--lo);
+  padding: 4px;
+  user-select: none;
+}
+
+.drag-handle:active { cursor: grabbing; }
+
+/* ── SETTINGS ── */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 700px) {
+  .settings-grid { grid-template-columns: 1fr; }
+}
+
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 20px 22px;
+}
+
+.settings-card-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--hi);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── CLOSED BANNER ── */
+.closed-banner {
+  background: var(--red-dim);
+  border: 1px solid rgba(212,64,42,0.3);
+  border-radius: var(--r-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.closed-banner-text { font-size: 0.85rem; color: var(--red); font-weight: 500; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 18px;
+  font-size: 0.84rem;
+  color: var(--hi);
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.25s;
+  pointer-events: none;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: rgba(46,204,113,0.3); }
+.toast.error { border-color: rgba(220,53,69,0.3); }
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--mid);
+}
+
+.empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty p { font-size: 0.88rem; line-height: 1.6; }
+
+/* ── LOADING ── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--mid);
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--lo);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── PRICE INPUT ── */
+.price-wrap {
+  position: relative;
+}
+
+.price-wrap span {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mid);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.price-wrap input { padding-left: 30px; }
+
+/* ── INLINE EDIT ── */
+.inline-price {
+  background: transparent;
+  border: none;
+  color: var(--amber);
+  font-weight: 600;
+  font-size: 0.84rem;
+  width: 80px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.inline-price:hover, .inline-price:focus {
+  background: var(--amber-dim);
+  outline: none;
+}
+
+/* ── ORDER ARROWS ── */
+.order-btns { display: flex; gap: 2px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Kiskadee</div>
+    <div class="login-sub">Painel Administrativo</div>
+    <p class="login-title">Acesse com seu email e senha</p>
+    <div id="loginErr"></div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="admin@kiskadee.com.br">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="loginPass" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:8px">Entrar</button>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">Kiskadee</div>
+      <div class="sidebar-brand-sub">Temakeria & Sushi Bar</div>
+      <div class="sidebar-badge">Admin</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Menu</div>
+      <button class="nav-item active" onclick="showSection('dashboard', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="showSection('categories', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+        Categorias
+      </button>
+      <button class="nav-item" onclick="showSection('products', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Pratos
+      </button>
+      <button class="nav-item" onclick="showSection('extras', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Adicionais
+      </button>
+      <div class="nav-section">Configurações</div>
+      <button class="nav-item" onclick="showSection('settings', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        Configurações
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-secondary btn-full btn-sm" onclick="doLogout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbarTitle">Dashboard</span>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- CLOSED BANNER -->
+      <div class="closed-banner" id="closedBanner" style="display:none">
+        <span class="closed-banner-text">⚠️ O restaurante está marcado como <strong>Fechado</strong> no menu público.</span>
+        <button class="btn btn-sm btn-secondary" onclick="showSection('settings', document.querySelector('[onclick*=settings]'))">Configurações</button>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="section active" id="sec-dashboard">
+        <div class="stats-grid" id="statsGrid">
+          <div class="loading"><div class="spinner"></div> Carregando...</div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <span class="table-header-title">Pratos em destaque</span>
+          </div>
+          <div id="dashProducts"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="section" id="sec-categories">
+        <div class="table-wrap">
+          <div class="table-header">
+            <span class="table-header-title">Categorias</span>
+            <button class="btn btn-primary btn-sm" onclick="openCatModal()">+ Nova categoria</button>
+          </div>
+          <div id="catList"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="section" id="sec-products">
+        <div class="table-wrap">
+          <div class="table-header">
+            <span class="table-header-title">Pratos</span>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="filterCat" class="search-input" style="width:160px" onchange="loadProducts()">
+                <option value="">Todas as categorias</option>
+              </select>
+              <input class="search-input" type="text" placeholder="Buscar prato..." id="searchProd" oninput="filterProducts()">
+              <button class="btn btn-primary btn-sm" onclick="openProdModal()">+ Novo prato</button>
+            </div>
+          </div>
+          <div id="prodList"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- EXTRAS -->
+      <div class="section" id="sec-extras">
+        <div class="table-wrap">
+          <div class="table-header">
+            <span class="table-header-title">Adicionais</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="filterProdExtras" class="search-input" style="width:200px" onchange="loadExtras()">
+                <option value="">Selecione um prato</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="openExtrasModal()">+ Novo adicional</button>
+            </div>
+          </div>
+          <div id="extrasList"><div class="empty"><div class="empty-icon">➕</div><p>Selecione um prato para ver seus adicionais.</p></div></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="section" id="sec-settings">
+        <div class="settings-grid">
+          <div class="settings-card">
+            <div class="settings-card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.21 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              WhatsApp
+            </div>
+            <div class="field">
+              <label>Número (com DDI e DDD)</label>
+              <input type="text" id="settingWpp" placeholder="5569992670528">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveSettings()">Salvar</button>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Horário de funcionamento
+            </div>
+            <div class="field">
+              <label>Descrição do horário</label>
+              <input type="text" id="settingHours" placeholder="Todos os dias 18h–23h">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveSettings()">Salvar</button>
+          </div>
+
+          <div class="settings-card" style="grid-column: span 2">
+            <div class="settings-card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Status do restaurante
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+              <label class="toggle">
+                <input type="checkbox" id="settingClosed" onchange="saveSettings()">
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.85rem;color:var(--hi)">Exibir mensagem de restaurante fechado</span>
+            </div>
+            <div class="field">
+              <label>Mensagem de fechado</label>
+              <input type="text" id="settingClosedMsg" placeholder="Voltamos às 18h! Fique à vontade para conferir o cardápio.">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveSettings()">Salvar configurações</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORIA -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="catModalTitle">Nova categoria</h3>
+      <button class="btn btn-icon btn-secondary" onclick="closeModal('catModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="catId">
+      <div class="field">
+        <label>Nome da categoria</label>
+        <input type="text" id="catName" placeholder="Ex: Temakis Tradicionais">
+      </div>
+      <div class="field">
+        <label>Emoji</label>
+        <input type="text" id="catEmoji" placeholder="🍣" maxlength="4">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+        <label class="toggle">
+          <input type="checkbox" id="catVisible" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="font-size:0.85rem;color:var(--hi)">Categoria visível no menu</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('catModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCat()">Salvar categoria</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUTO -->
+<div class="modal-overlay" id="prodModal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <h3 id="prodModalTitle">Novo prato</h3>
+      <button class="btn btn-icon btn-secondary" onclick="closeModal('prodModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="prodId">
+      <div class="field">
+        <label>Categoria</label>
+        <select id="prodCat"></select>
+      </div>
+      <div class="field">
+        <label>Nome do prato</label>
+        <input type="text" id="prodName" placeholder="Ex: Temaki Salmão Cheese">
+      </div>
+      <div class="field">
+        <label>Descrição</label>
+        <textarea id="prodDesc" placeholder="Ingredientes e destaques do prato..."></textarea>
+      </div>
+      <div class="field">
+        <label>Preço</label>
+        <div class="price-wrap">
+          <span>R$</span>
+          <input type="number" id="prodPrice" placeholder="0,00" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>Fotos (até 5)</label>
+        <div class="photo-grid" id="photoGrid"></div>
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+        <label class="toggle">
+          <input type="checkbox" id="prodVisible" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="font-size:0.85rem;color:var(--hi)">Prato visível no menu</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('prodModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProd()">Salvar prato</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADICIONAL -->
+<div class="modal-overlay" id="extrasModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="extrasModalTitle">Novo adicional</h3>
+      <button class="btn btn-icon btn-secondary" onclick="closeModal('extrasModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="extrasId">
+      <div class="field">
+        <label>Prato</label>
+        <select id="extrasProd"></select>
+      </div>
+      <div class="field">
+        <label>Nome do adicional</label>
+        <input type="text" id="extrasName" placeholder="Ex: Cream Cheese extra">
+      </div>
+      <div class="field">
+        <label>Preço</label>
+        <div class="price-wrap">
+          <span>R$</span>
+          <input type="number" id="extrasPrice" placeholder="0,00" step="0.01" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('extrasModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveExtras()">Salvar adicional</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE CONFIG ──
+const SB_URL  = 'https://parbcazqygqiewkuluuu.supabase.co';
+const SB_KEY  = 'sb_publishable_8QnJ6JqcWsz7Pu6ctiaxTg_9yawen1E';
+
+async function sbFetch(path, opts = {}) {
+  const headers = {
+    'apikey': SB_KEY,
+    'Content-Type': 'application/json',
+    ...opts.headers
+  };
+  if (sbSession) headers['Authorization'] = 'Bearer ' + sbSession.access_token;
+  const res = await fetch(SB_URL + path, { ...opts, headers });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── STATE ──
+let sbSession = null;
+let categories = [];
+let products = [];
+let currentPhotos = []; // for product modal
+let settings = {};
+
+// ── LOGIN ──
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.style.display = 'none';
+
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (data.error || !data.access_token) throw new Error(data.error_description || 'Credenciais inválidas');
+    sbSession = data;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'flex';
+    await initApp();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogout() {
+  sbSession = null;
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// ── INIT ──
+async function initApp() {
+  await Promise.all([loadCategories(), loadSettings()]);
+  await loadDashboard();
+  updateClosedBanner();
+}
+
+// ── NAVIGATION ──
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  const titles = {
+    dashboard: 'Dashboard', categories: 'Categorias',
+    products: 'Pratos', extras: 'Adicionais', settings: 'Configurações'
+  };
+  document.getElementById('topbarTitle').textContent = titles[id] || id;
+
+  if (id === 'products') loadProducts();
+  if (id === 'categories') renderCategories();
+  if (id === 'extras') loadExtrasSection();
+  if (id === 'settings') renderSettings();
+}
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  const total = products.length;
+  const visible = products.filter(p => p.visible).length;
+  const hidden = total - visible;
+  const cats = categories.length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total de pratos</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card green"><div class="stat-label">Pratos visíveis</div><div class="stat-value">${visible}</div></div>
+    <div class="stat-card red"><div class="stat-label">Pratos ocultos</div><div class="stat-value">${hidden}</div></div>
+    <div class="stat-card amber"><div class="stat-label">Categorias</div><div class="stat-value">${cats}</div></div>
+  `;
+
+  // top 6 products with photos
+  const withPhotos = products.filter(p => p.photos && p.photos.length > 0).slice(0, 6);
+  const noPhotos = products.filter(p => !p.photos || p.photos.length === 0);
+
+  let html = '<table><thead><tr><th></th><th>Prato</th><th>Categoria</th><th>Preço</th><th>Status</th></tr></thead><tbody>';
+  const sample = [...withPhotos, ...noPhotos].slice(0, 8);
+  if (sample.length === 0) {
+    html = `<div class="empty"><div class="empty-icon">🍣</div><p>Nenhum prato cadastrado ainda.<br>Vá em <strong>Pratos</strong> para começar.</p></div>`;
+  } else {
+    sample.forEach(p => {
+      const cat = categories.find(c => c.id === p.category_id);
+      const img = p.photos && p.photos.length > 0
+        ? `<img class="td-img" src="${p.photos[0]}">`
+        : `<div class="td-img-placeholder">⭐</div>`;
+      html += `<tr>
+        <td>${img}</td>
+        <td style="font-weight:500">${p.name}</td>
+        <td><span class="badge badge-amber">${cat ? cat.emoji + ' ' + cat.name : '—'}</span></td>
+        <td style="color:var(--amber);font-weight:600">R$ ${Number(p.price).toFixed(2).replace('.',',')}</td>
+        <td><span class="badge ${p.visible ? 'badge-green' : 'badge-red'}">${p.visible ? 'Visível' : 'Oculto'}</span></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('dashProducts').innerHTML = html;
+    return;
+  }
+  document.getElementById('dashProducts').innerHTML = html;
+}
+
+// ── CATEGORIES ──
+async function loadCategories() {
+  try {
+    categories = await sbFetch('/rest/v1/categories?select=*&order=position.asc') || [];
+    if (products.length === 0) await loadAllProducts();
+  } catch(e) { toast('Erro ao carregar categorias', 'error'); }
+}
+
+async function loadAllProducts() {
+  try {
+    products = await sbFetch('/rest/v1/products?select=*&order=position.asc') || [];
+  } catch(e) {}
+}
+
+function renderCategories() {
+  if (categories.length === 0) {
+    document.getElementById('catList').innerHTML = `<div class="empty"><div class="empty-icon">📂</div><p>Nenhuma categoria ainda.<br>Clique em <strong>Nova categoria</strong> para começar.</p></div>`;
+    return;
+  }
+  let html = `<table><thead><tr><th>Emoji</th><th>Nome</th><th>Pratos</th><th>Visível</th><th>Ordem</th><th>Ações</th></tr></thead><tbody>`;
+  categories.forEach((c, i) => {
+    const count = products.filter(p => p.category_id === c.id).length;
+    html += `<tr>
+      <td style="font-size:1.3rem">${c.emoji || '🍣'}</td>
+      <td style="font-weight:500">${c.name}</td>
+      <td><span class="badge badge-amber">${count} prato${count !== 1 ? 's' : ''}</span></td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${c.visible ? 'checked' : ''} onchange="toggleCat('${c.id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td>
+        <div class="order-btns">
+          <button class="btn btn-icon btn-secondary btn-sm" onclick="moveCat(${i}, -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button class="btn btn-icon btn-secondary btn-sm" onclick="moveCat(${i}, 1)" ${i === categories.length-1 ? 'disabled' : ''}>↓</button>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="openCatModal('${c.id}')">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCat('${c.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('catList').innerHTML = html;
+}
+
+function openCatModal(id) {
+  const cat = id ? categories.find(c => c.id === id) : null;
+  document.getElementById('catModalTitle').textContent = cat ? 'Editar categoria' : 'Nova categoria';
+  document.getElementById('catId').value = cat ? cat.id : '';
+  document.getElementById('catName').value = cat ? cat.name : '';
+  document.getElementById('catEmoji').value = cat ? cat.emoji : '🍣';
+  document.getElementById('catVisible').checked = cat ? cat.visible : true;
+  openModal('catModal');
+}
+
+async function saveCat() {
+  const id   = document.getElementById('catId').value;
+  const name = document.getElementById('catName').value.trim();
+  const emoji = document.getElementById('catEmoji').value.trim() || '🍣';
+  const visible = document.getElementById('catVisible').checked;
+  if (!name) return toast('Informe o nome da categoria', 'error');
+
+  try {
+    if (id) {
+      await sbFetch(`/rest/v1/categories?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name, emoji, visible })
+      });
+      toast('Categoria atualizada!', 'success');
+    } else {
+      const pos = categories.length;
+      await sbFetch('/rest/v1/categories', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ name, emoji, visible, position: pos })
+      });
+      toast('Categoria criada!', 'success');
+    }
+    closeModal('catModal');
+    await loadCategories();
+    renderCategories();
+  } catch(e) { toast('Erro ao salvar: ' + e.message, 'error'); }
+}
+
+async function toggleCat(id, visible) {
+  try {
+    await sbFetch(`/rest/v1/categories?id=eq.${id}`, {
+      method: 'PATCH', body: JSON.stringify({ visible })
+    });
+    const c = categories.find(c => c.id === id);
+    if (c) c.visible = visible;
+    toast(visible ? 'Categoria visível' : 'Categoria oculta', 'success');
+  } catch(e) { toast('Erro', 'error'); }
+}
+
+async function moveCat(index, dir) {
+  const newIndex = index + dir;
+  if (newIndex < 0 || newIndex >= categories.length) return;
+  const a = categories[index], b = categories[newIndex];
+  [a.position, b.position] = [b.position, a.position];
+  categories.splice(index, 1);
+  categories.splice(newIndex, 0, a);
+  try {
+    await sbFetch(`/rest/v1/categories?id=eq.${a.id}`, { method: 'PATCH', body: JSON.stringify({ position: a.position }) });
+    await sbFetch(`/rest/v1/categories?id=eq.${b.id}`, { method: 'PATCH', body: JSON.stringify({ position: b.position }) });
+    renderCategories();
+  } catch(e) { toast('Erro ao reordenar', 'error'); }
+}
+
+async function deleteCat(id) {
+  if (!confirm('Excluir esta categoria e todos os seus pratos?')) return;
+  try {
+    await sbFetch(`/rest/v1/categories?id=eq.${id}`, { method: 'DELETE' });
+    toast('Categoria excluída', 'success');
+    await loadCategories();
+    renderCategories();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+// ── PRODUCTS ──
+async function loadProducts() {
+  document.getElementById('prodList').innerHTML = `<div class="loading"><div class="spinner"></div> Carregando...</div>`;
+  const catFilter = document.getElementById('filterCat').value;
+  const url = catFilter
+    ? `/rest/v1/products?select=*&category_id=eq.${catFilter}&order=position.asc`
+    : `/rest/v1/products?select=*&order=position.asc`;
+  try {
+    products = await sbFetch(url) || [];
+    populateCatSelects();
+    renderProducts(products);
+  } catch(e) { toast('Erro ao carregar pratos', 'error'); }
+}
+
+function populateCatSelects() {
+  const selects = ['filterCat', 'prodCat', 'filterProdExtras', 'extrasProd'];
+  selects.forEach(sid => {
+    const el = document.getElementById(sid);
+    if (!el) return;
+    const val = el.value;
+    const isFilter = sid === 'filterCat';
+    const isProdFilter = sid === 'filterProdExtras';
+    el.innerHTML = isFilter
+      ? '<option value="">Todas as categorias</option>'
+      : isProdFilter ? '<option value="">Selecione um prato</option>' : '';
+    if (sid === 'extrasProd' || sid === 'filterProdExtras') {
+      products.forEach(p => {
+        el.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+      });
+    } else {
+      categories.forEach(c => {
+        el.innerHTML += `<option value="${c.id}">${c.emoji} ${c.name}</option>`;
+      });
+    }
+    el.value = val;
+  });
+}
+
+function renderProducts(list) {
+  if (!list || list.length === 0) {
+    document.getElementById('prodList').innerHTML = `<div class="empty"><div class="empty-icon">🍣</div><p>Nenhum prato encontrado.</p></div>`;
+    return;
+  }
+  let html = `<table><thead><tr><th></th><th>Prato</th><th>Categoria</th><th>Preço</th><th>Visível</th><th>Ordem</th><th>Ações</th></tr></thead><tbody>`;
+  list.forEach((p, i) => {
+    const cat = categories.find(c => c.id === p.category_id);
+    const img = p.photos && p.photos.length > 0
+      ? `<img class="td-img" src="${p.photos[0]}">`
+      : `<div class="td-img-placeholder">⭐</div>`;
+    html += `<tr>
+      <td>${img}</td>
+      <td style="font-weight:500;max-width:200px">${p.name}</td>
+      <td><span class="badge badge-amber" style="font-size:0.65rem">${cat ? cat.emoji + ' ' + cat.name : '—'}</span></td>
+      <td>
+        <input class="inline-price" type="number" value="${p.price}" step="0.01" min="0"
+          onblur="updatePrice('${p.id}', this.value)"
+          title="Clique para editar o preço">
+      </td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${p.visible ? 'checked' : ''} onchange="toggleProd('${p.id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td>
+        <div class="order-btns">
+          <button class="btn btn-icon btn-secondary btn-sm" onclick="moveProd('${p.id}', -1)">↑</button>
+          <button class="btn btn-icon btn-secondary btn-sm" onclick="moveProd('${p.id}', 1)">↓</button>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" onclick="openProdModal('${p.id}')">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProd('${p.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('prodList').innerHTML = html;
+}
+
+function filterProducts() {
+  const q = document.getElementById('searchProd').value.toLowerCase();
+  const filtered = products.filter(p => p.name.toLowerCase().includes(q));
+  renderProducts(filtered);
+}
+
+function openProdModal(id) {
+  const prod = id ? products.find(p => p.id === id) : null;
+  document.getElementById('prodModalTitle').textContent = prod ? 'Editar prato' : 'Novo prato';
+  document.getElementById('prodId').value = prod ? prod.id : '';
+  document.getElementById('prodName').value = prod ? prod.name : '';
+  document.getElementById('prodDesc').value = prod ? prod.desc || prod.description || '' : '';
+  document.getElementById('prodPrice').value = prod ? prod.price : '';
+  document.getElementById('prodVisible').checked = prod ? prod.visible : true;
+
+  populateCatSelects();
+  if (prod && prod.category_id) document.getElementById('prodCat').value = prod.category_id;
+
+  currentPhotos = prod && prod.photos ? [...prod.photos] : [];
+  renderPhotoGrid();
+  openModal('prodModal');
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  let html = '';
+  currentPhotos.forEach((url, i) => {
+    html += `<div class="photo-thumb">
+      <img src="${url}" alt="">
+      <button class="photo-thumb-del" onclick="removePhoto(${i})">✕</button>
+    </div>`;
+  });
+  if (currentPhotos.length < 5) {
+    html += `<div class="photo-add" onclick="document.getElementById('photoInput').click()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      <span>Adicionar foto</span>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function removePhoto(index) {
+  currentPhotos.splice(index, 1);
+  renderPhotoGrid();
+}
+
+async function handlePhotoUpload(event) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  const remaining = 5 - currentPhotos.length;
+  const toUpload = files.slice(0, remaining);
+  toast('Enviando foto(s)...', '');
+
+  for (const file of toUpload) {
+    try {
+      const ext = file.name.split('.').pop();
+      const fname = `pratos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const res = await fetch(`${SB_URL}/storage/v1/object/fotos/${fname}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + sbSession.access_token,
+          'Content-Type': file.type,
+          'x-upsert': 'true'
+        },
+        body: file
+      });
+      if (!res.ok) throw new Error('Upload falhou');
+      const publicUrl = `${SB_URL}/storage/v1/object/public/fotos/${fname}`;
+      currentPhotos.push(publicUrl);
+    } catch(e) { toast('Erro no upload: ' + e.message, 'error'); }
+  }
+  renderPhotoGrid();
+  event.target.value = '';
+  toast('Foto(s) enviada(s)!', 'success');
+}
+
+async function saveProd() {
+  const id    = document.getElementById('prodId').value;
+  const name  = document.getElementById('prodName').value.trim();
+  const desc  = document.getElementById('prodDesc').value.trim();
+  const price = parseFloat(document.getElementById('prodPrice').value);
+  const catId = document.getElementById('prodCat').value;
+  const visible = document.getElementById('prodVisible').checked;
+
+  if (!name) return toast('Informe o nome do prato', 'error');
+  if (!catId) return toast('Selecione uma categoria', 'error');
+  if (isNaN(price) || price < 0) return toast('Informe um preço válido', 'error');
+
+  const payload = { name, description: desc, price, category_id: catId, visible, photos: currentPhotos };
+
+  try {
+    if (id) {
+      await sbFetch(`/rest/v1/products?id=eq.${id}`, {
+        method: 'PATCH', body: JSON.stringify(payload)
+      });
+      toast('Prato atualizado!', 'success');
+    } else {
+      const pos = products.length;
+      await sbFetch('/rest/v1/products', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ ...payload, position: pos })
+      });
+      toast('Prato criado!', 'success');
+    }
+    closeModal('prodModal');
+    await loadProducts();
+  } catch(e) { toast('Erro ao salvar: ' + e.message, 'error'); }
+}
+
+async function updatePrice(id, val) {
+  const price = parseFloat(val);
+  if (isNaN(price) || price < 0) return;
+  try {
+    await sbFetch(`/rest/v1/products?id=eq.${id}`, {
+      method: 'PATCH', body: JSON.stringify({ price })
+    });
+    const p = products.find(p => p.id === id);
+    if (p) p.price = price;
+    toast('Preço atualizado!', 'success');
+  } catch(e) { toast('Erro ao atualizar preço', 'error'); }
+}
+
+async function toggleProd(id, visible) {
+  try {
+    await sbFetch(`/rest/v1/products?id=eq.${id}`, {
+      method: 'PATCH', body: JSON.stringify({ visible })
+    });
+    const p = products.find(p => p.id === id);
+    if (p) p.visible = visible;
+    toast(visible ? 'Prato visível no menu' : 'Prato oculto do menu', 'success');
+  } catch(e) { toast('Erro', 'error'); }
+}
+
+async function moveProd(id, dir) {
+  const idx = products.findIndex(p => p.id === id);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= products.length) return;
+  const a = products[idx], b = products[newIdx];
+  [a.position, b.position] = [b.position, a.position];
+  products.splice(idx, 1);
+  products.splice(newIdx, 0, a);
+  try {
+    await sbFetch(`/rest/v1/products?id=eq.${a.id}`, { method: 'PATCH', body: JSON.stringify({ position: a.position }) });
+    await sbFetch(`/rest/v1/products?id=eq.${b.id}`, { method: 'PATCH', body: JSON.stringify({ position: b.position }) });
+    renderProducts(products);
+  } catch(e) { toast('Erro ao reordenar', 'error'); }
+}
+
+async function deleteProd(id) {
+  if (!confirm('Excluir este prato permanentemente?')) return;
+  try {
+    await sbFetch(`/rest/v1/products?id=eq.${id}`, { method: 'DELETE' });
+    toast('Prato excluído', 'success');
+    await loadProducts();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+// ── EXTRAS ──
+function loadExtrasSection() {
+  populateCatSelects();
+}
+
+async function loadExtras() {
+  const prodId = document.getElementById('filterProdExtras').value;
+  if (!prodId) {
+    document.getElementById('extrasList').innerHTML = `<div class="empty"><div class="empty-icon">➕</div><p>Selecione um prato para ver seus adicionais.</p></div>`;
+    return;
+  }
+  try {
+    const extras = await sbFetch(`/rest/v1/extras?product_id=eq.${prodId}&order=created_at.asc`) || [];
+    if (extras.length === 0) {
+      document.getElementById('extrasList').innerHTML = `<div class="empty"><div class="empty-icon">➕</div><p>Nenhum adicional cadastrado para este prato.</p></div>`;
+      return;
+    }
+    let html = `<table><thead><tr><th>Nome</th><th>Preço</th><th>Ações</th></tr></thead><tbody>`;
+    extras.forEach(e => {
+      html += `<tr>
+        <td>${e.name}</td>
+        <td style="color:var(--amber);font-weight:600">R$ ${Number(e.price).toFixed(2).replace('.',',')}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm" onclick="openExtrasModal('${e.id}')">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteExtras('${e.id}')">Excluir</button>
+          </div>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('extrasList').innerHTML = html;
+  } catch(e) { toast('Erro ao carregar adicionais', 'error'); }
+}
+
+async function openExtrasModal(id) {
+  populateCatSelects();
+  if (id) {
+    try {
+      const extras = await sbFetch(`/rest/v1/extras?id=eq.${id}`) || [];
+      const e = extras[0];
+      document.getElementById('extrasModalTitle').textContent = 'Editar adicional';
+      document.getElementById('extrasId').value = e.id;
+      document.getElementById('extrasProd').value = e.product_id;
+      document.getElementById('extrasName').value = e.name;
+      document.getElementById('extrasPrice').value = e.price;
+    } catch(err) { toast('Erro', 'error'); return; }
+  } else {
+    document.getElementById('extrasModalTitle').textContent = 'Novo adicional';
+    document.getElementById('extrasId').value = '';
+    document.getElementById('extrasName').value = '';
+    document.getElementById('extrasPrice').value = '';
+    const sel = document.getElementById('filterProdExtras').value;
+    if (sel) document.getElementById('extrasProd').value = sel;
+  }
+  openModal('extrasModal');
+}
+
+async function saveExtras() {
+  const id = document.getElementById('extrasId').value;
+  const prodId = document.getElementById('extrasProd').value;
+  const name = document.getElementById('extrasName').value.trim();
+  const price = parseFloat(document.getElementById('extrasPrice').value);
+  if (!prodId) return toast('Selecione um prato', 'error');
+  if (!name) return toast('Informe o nome do adicional', 'error');
+
+  try {
+    if (id) {
+      await sbFetch(`/rest/v1/extras?id=eq.${id}`, {
+        method: 'PATCH', body: JSON.stringify({ name, price: isNaN(price) ? 0 : price })
+      });
+      toast('Adicional atualizado!', 'success');
+    } else {
+      await sbFetch('/rest/v1/extras', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ product_id: prodId, name, price: isNaN(price) ? 0 : price })
+      });
+      toast('Adicional criado!', 'success');
+    }
+    closeModal('extrasModal');
+    loadExtras();
+  } catch(e) { toast('Erro ao salvar', 'error'); }
+}
+
+async function deleteExtras(id) {
+  if (!confirm('Excluir este adicional?')) return;
+  try {
+    await sbFetch(`/rest/v1/extras?id=eq.${id}`, { method: 'DELETE' });
+    toast('Adicional excluído', 'success');
+    loadExtras();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+// ── SETTINGS ──
+async function loadSettings() {
+  try {
+    const data = await sbFetch('/rest/v1/settings?id=eq.1') || [];
+    settings = data[0] || {};
+  } catch(e) {}
+}
+
+function renderSettings() {
+  document.getElementById('settingWpp').value = settings.whatsapp || '5569992670528';
+  document.getElementById('settingHours').value = settings.opening_hours || 'Todos os dias 18h–23h';
+  document.getElementById('settingClosed').checked = settings.is_closed || false;
+  document.getElementById('settingClosedMsg').value = settings.closed_message || '';
+}
+
+async function saveSettings() {
+  const payload = {
+    whatsapp: document.getElementById('settingWpp').value.trim(),
+    opening_hours: document.getElementById('settingHours').value.trim(),
+    is_closed: document.getElementById('settingClosed').checked,
+    closed_message: document.getElementById('settingClosedMsg').value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  try {
+    await sbFetch('/rest/v1/settings?id=eq.1', {
+      method: 'PATCH', body: JSON.stringify(payload)
+    });
+    settings = { ...settings, ...payload };
+    updateClosedBanner();
+    toast('Configurações salvas!', 'success');
+  } catch(e) { toast('Erro ao salvar configurações', 'error'); }
+}
+
+function updateClosedBanner() {
+  document.getElementById('closedBanner').style.display = settings.is_closed ? 'flex' : 'none';
+}
+
+// ── MODAL HELPERS ──
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+
+// ── TOAST ──
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
