@@ -747,21 +747,29 @@
   /* ── PHOTO CAROUSEL ── */
   .carousel-track {
     display: flex;
+    width: 100%;
     height: 100%;
     transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
     touch-action: pan-y;
+    will-change: transform;
   }
 
   .carousel-slide {
     flex: 0 0 100%;
+    width: 100%;
     height: 100%;
     position: relative;
+    overflow: hidden;
   }
 
   .carousel-slide img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     display: block;
     -webkit-user-drag: none;
     user-select: none;
@@ -1329,6 +1337,18 @@ const promos = [
     photos: ["fotos/sushi-cheff-1.jpg", "fotos/sushi-cheff-2.jpg"] },
 ];
 
+// ── MAPA CENTRAL DE FOTOS ──
+// Chave = nome exato do prato no menuData. Valor = array de fotos.
+// Adicione aqui qualquer prato que tenha fotos — aparece no card E no carrossel do modal.
+const photoMap = {
+  "Carpaccio de Salmão":              ["fotos/carpaccio-de-salmao-1.jpg","fotos/carpaccio-de-salmao-2.jpg","fotos/carpaccio-de-salmao-3.jpg","fotos/carpaccio-de-salmao-4.jpg"],
+  "Hot Rainbow (8 un.)":              ["fotos/hot-rainbow-1.jpg","fotos/hot-rainbow-2.jpg"],
+  "Jhow ao Forno (8 un.)":            ["fotos/jhow-ao-forno-1.jpg","fotos/jhow-ao-forno-2.jpg"],
+  "Uramaki Philadelphia Roll (8 un.)":["fotos/uramaki-philadelphia-1.jpg","fotos/uramaki-philadelphia-2.jpg"],
+  "Tataki Maçaricado":                ["fotos/tataki-macaricado-1.jpg","fotos/tataki-macaricado-2.jpg"],
+  "Sushi Cheff (7 un.)":              ["fotos/sushi-cheff-1.jpg","fotos/sushi-cheff-2.jpg"],
+};
+
 // ── STATE ──
 let cart = [];
 let currentModal = null;
@@ -1342,18 +1362,23 @@ function fmtPrice(v) {
 function buildPromos() {
   const wrap = document.getElementById('promoScroll');
   promos.forEach(p => {
+    const photos = photoMap[p.name] || p.photos || [];
+    const coverImg = photos.length > 0
+      ? `<img src="${photos[0]}" alt="${p.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center;">`
+      : `<div class="promo-img-placeholder">⭐</div>`;
+
     const card = document.createElement('div');
     card.className = 'promo-card';
     card.innerHTML = `
       <div class="promo-img-wrap">
-        <div class="promo-img-placeholder">⭐</div>
+        ${coverImg}
         <span class="promo-badge-tag">Destaque</span>
       </div>
       <div class="promo-body">
         <div class="promo-name">${p.name}</div>
         <div class="promo-price">${fmtPrice(p.price)}</div>
       </div>`;
-    card.onclick = () => openModal(p.name, p.desc, p.price, p.photos);
+    card.onclick = () => openModal(p.name, p.desc, p.price, photos);
     wrap.appendChild(card);
   });
 }
@@ -1389,11 +1414,16 @@ function buildMenu() {
 
     const grid = sec.querySelector('.items-grid');
     section.items.forEach(item => {
+      const photos = photoMap[item.name] || item.photos || [];
+      const coverImg = photos.length > 0
+        ? `<img src="${photos[0]}" alt="${item.name}" loading="lazy">`
+        : `<div class="item-img-placeholder">⭐</div>`;
+
       const card = document.createElement('div');
       card.className = 'item-card';
       card.innerHTML = `
         <div class="item-img-wrap">
-          <div class="item-img-placeholder">⭐</div>
+          ${coverImg}
         </div>
         <div class="item-body">
           <div class="item-name">${item.name}</div>
@@ -1403,7 +1433,7 @@ function buildMenu() {
             <button class="add-btn" onclick="event.stopPropagation(); addToCart('${item.name.replace(/'/g,"\\'")}', ${item.price})">+</button>
           </div>
         </div>`;
-      card.onclick = () => openModal(item.name, item.desc, item.price, item.photos);
+      card.onclick = () => openModal(item.name, item.desc, item.price, photos);
       grid.appendChild(card);
     });
 
