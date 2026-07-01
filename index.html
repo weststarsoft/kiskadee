@@ -93,7 +93,7 @@
     background: var(--red);
     border: none;
     border-radius: var(--radius-md);
-    padding: 10px 16px;
+    padding: 11px 18px;
     color: var(--white);
     font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
@@ -101,12 +101,20 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: background 0.2s;
+    gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
     white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(212,64,42,0.4);
   }
 
-  .cart-btn:hover { background: var(--red-hover); }
+  .cart-btn:hover {
+    background: var(--red-hover);
+    box-shadow: 0 6px 20px rgba(212,64,42,0.55);
+  }
+
+  .cart-btn svg {
+    flex-shrink: 0;
+  }
 
   .cart-count {
     background: var(--amber);
@@ -1022,7 +1030,12 @@
     <span class="header-hours">⏰ Todos os dias 18h–23h</span>
   </div>
   <button class="cart-btn" onclick="openCart()">
-    🛒 <span id="cartCountHeader">0</span>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="21" r="1.2"/>
+      <circle cx="20" cy="21" r="1.2"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+    <span id="cartCountHeader">0</span>
   </button>
 </header>
 
@@ -1055,6 +1068,11 @@
 
 <!-- FLOATING CART -->
 <div class="float-cart" id="floatCart" onclick="openCart()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+    <circle cx="9" cy="21" r="1.2"/>
+    <circle cx="20" cy="21" r="1.2"/>
+    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+  </svg>
   <span class="float-cart-badge" id="floatCount">0</span>
   <span class="float-cart-label">Ver carrinho</span>
   <span class="float-cart-total" id="floatTotal">R$ 0,00</span>
@@ -1640,7 +1658,7 @@ function renderCartItems() {
   const footer = document.getElementById('cartFooter');
 
   if (cart.length === 0) {
-    wrap.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Seu carrinho está vazio.<br>Adicione itens do cardápio!</p></div>`;
+    wrap.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:#444"><circle cx="9" cy="21" r="1.2"/><circle cx="20" cy="21" r="1.2"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div><p>Seu carrinho está vazio.<br>Adicione itens do cardápio!</p></div>`;
     footer.style.display = 'none';
     return;
   }
